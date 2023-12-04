@@ -1,0 +1,18 @@
+<component name="libraryTable">
+  <library name="opencv-480">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../opencv/build/java/opencv-480.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <NATIVE>
+      <root url="file://$PROJECT_DIR$/../opencv/build/java/x64" />
+    </NATIVE>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/../opencv/build/java/opencv-480.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../opencv/build/java/opencv-480.jar!/" />
+    </SOURCES>
+    <excluded>
+      <root url="jar://$PROJECT_DIR$/../opencv/build/java/opencv-480.jar!/" />
+    </excluded>
+  </library>
+</component>
