@@ -70,6 +70,7 @@ class ClientHandler implements Runnable {
                         double result = performFaceComparison(imagePath1, path);
                         if ( result >=70.0) {
                             String name = getNameFromDatabase(path);
+                            System.out.println(path+","+name+","+result);
                             out.println(path + ";" + name + ";" + result);
                             foundResult = true;
                         }
@@ -245,7 +246,7 @@ class ClientHandler implements Runnable {
             String apiUrl = "https://api.edenai.run/v2/image/object_detection";
             String apiKey = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiODgyM2Y4MjgtZDVlZi00ODEzLThlYTYtNmZiMDQ3MjdhYzEzIiwidHlwZSI6ImFwaV90b2tlbiJ9.l7z8SZKk69WtsX62WK5MTOxQSm1liS2lzHBkvHilvF0";
             String filePath = imagePath;
-            String providers = "google,amazon";
+            String providers = "amazon";
 
             URL url = new URL(apiUrl);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();

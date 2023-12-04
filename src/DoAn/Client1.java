@@ -332,7 +332,6 @@ public class Client1 extends javax.swing.JFrame {
                 ImageIcon imageIcon = new ImageIcon(ImagePath);
                 themthatbai.transferImage(imageIcon);
             } 
-            //socket.close();
         } catch (IOException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi khi kết nối đến server");
