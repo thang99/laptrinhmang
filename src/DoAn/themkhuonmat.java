@@ -5,6 +5,11 @@
  */
 package DoAn;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -23,10 +28,25 @@ public class themkhuonmat extends javax.swing.JFrame {
     /**
      * Creates new form themkhuonmat
      */
+    private Socket socket;
+    
     public themkhuonmat() {
         initComponents();
+        connectToServer();
     }
     
+    private void connectToServer() {
+        String serverAddress = "localhost";
+        int serverPort = 12345;
+
+        try {
+            socket = new Socket(serverAddress, serverPort);
+            System.out.println("Client is connected to the server.");
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi kết nối đến server");
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -96,32 +116,24 @@ public class themkhuonmat extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void okActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okActionPerformed
-        Client1 client1 = Client1.getCurrentInstance();
-        String imagePath = client1.getImagePath();
-        System.out.println(imagePath);
-        try {
-            String url = "jdbc:sqlserver://localhost:1433;databaseName=laptrinhmang";
-            String username = "sa";
-            String password = "thang2822001"; 
-            Connection connection = DriverManager.getConnection(url, username, password);      
-            String query = "INSERT INTO ImagePaths VALUES(?,?)";
-            PreparedStatement pst = connection.prepareStatement(query);
-            pst.setString(1, imagePath);
-            pst.setString(2, tenhinhanh.getText());
-            int n = pst.executeUpdate();
-            if(tenhinhanh.getText().equals("")){
-                JOptionPane.showMessageDialog(this, "Vui lòng nhập tên");
-            }
-            else if(n!=0){
+        
+        try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+            Client1 client1 = Client1 .getCurrentInstance();
+            String imagePath = client1.getImagePath();
+            System.out.println(imagePath);
+            out.println("add "+imagePath+";"+tenhinhanh.getText());
+            String line;
+            while ((line = in.readLine()) != null) {                
+                System.out.println(line);
                 JOptionPane.showMessageDialog(this, "Thêm thành công");
-                // Đóng cửa sổ hiện tại
-                this.dispose();
-            }else{
-                JOptionPane.showMessageDialog(this, "Thêm thất bại");
             }
             
+            
         } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Thêm thất bại");
         }
+        this.dispose();
     }//GEN-LAST:event_okActionPerformed
 
     /**

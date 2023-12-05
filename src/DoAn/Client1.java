@@ -72,6 +72,7 @@ public class Client1 extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         tennhandien = new javax.swing.JLabel();
+        reset = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         jPanel11 = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
@@ -122,6 +123,13 @@ public class Client1 extends javax.swing.JFrame {
         tennhandien.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         tennhandien.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 
+        reset.setText("Reset");
+        reset.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -141,12 +149,14 @@ public class Client1 extends javax.swing.JFrame {
                                 .addGap(18, 18, 18))
                             .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addGap(87, 87, 87)
-                                .addComponent(chonanh)
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(reset, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(chonanh, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addGap(227, 227, 227)))
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(hinh2, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(tennhandien, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(95, 95, 95))))
+                            .addComponent(tennhandien, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(77, 77, 77))))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addGap(138, 138, 138)
                 .addComponent(jLabel3)
@@ -173,10 +183,12 @@ public class Client1 extends javax.swing.JFrame {
                         .addGap(168, 168, 168)
                         .addComponent(xacnhan)))
                 .addGap(18, 18, 18)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(chonanh)
-                    .addComponent(tennhandien, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(100, Short.MAX_VALUE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(chonanh, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(tennhandien, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(29, 29, 29)
+                .addComponent(reset)
+                .addContainerGap(57, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Nhận diện khuôn mặt", jPanel2);
@@ -414,6 +426,32 @@ public class Client1 extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this, "Lỗi khi kết nối đến server");
         }
     }//GEN-LAST:event_xacnhan1ActionPerformed
+
+    private void resetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetActionPerformed
+        try {
+        socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+        }
+
+        // Kết nối lại đến server
+        connectToServer();
+
+        // Đặt hình ảnh về null
+        hinh1.setIcon(null);
+        hinh2.setIcon(null);
+        hinh3.setIcon(null);
+        hinh4.setIcon(null);
+
+        // Xóa nội dung đang hiển thị
+        tennhandien.setText("");
+        tennhandien1.setText("");
+        // Cập nhật lại giao diện
+        jPanel2.validate();
+        jPanel2.repaint();
+        jPanel11.validate();
+        jPanel11.repaint();
+    }//GEN-LAST:event_resetActionPerformed
     
     /**
      * @param args the command line arguments
@@ -446,6 +484,7 @@ public class Client1 extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JButton reset;
     private javax.swing.JLabel tennhandien;
     private javax.swing.JLabel tennhandien1;
     private javax.swing.JButton xacnhan;

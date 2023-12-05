@@ -85,6 +85,14 @@ class ClientHandler implements Runnable {
                     String Object = ObjectDetection(Path);
                     out.print(Object);
                 }
+                else if(inputLine.startsWith("add")){
+                    String them = inputLine.replace("add", "");
+                    String[] parts = them.split(";");
+                    String receivedPath = parts[0];
+                    String receivedName = parts[1];                   
+                    String themdtb = insertNameToDatabase(receivedPath, receivedName);
+                    out.println(themdtb);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -122,6 +130,23 @@ class ClientHandler implements Runnable {
              e.printStackTrace();
         }
         return name;
+    }
+    
+    private static String insertNameToDatabase(String Path, String name){
+        try {
+            String url = "jdbc:sqlserver://localhost:1433;databaseName=laptrinhmang";
+            String username = "sa";
+            String password = "thang2822001"; 
+            Connection connection = DriverManager.getConnection(url, username, password);      
+            String query = "INSERT INTO ImagePaths VALUES(?,?)";
+            PreparedStatement pst = connection.prepareStatement(query);
+            pst.setString(1, Path);
+            pst.setString(2, name);
+
+        } catch (Exception e) {
+            return "Thêm thất bại";
+        }
+        return "Thêm thành công!";
     }
     
     private static String getImagePathFromDatabase() {
