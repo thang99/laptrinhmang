@@ -20,6 +20,7 @@ public class themthatbai extends javax.swing.JFrame {
     /**
      * Creates new form add
      */
+
     public themthatbai() {
         initComponents();
     }
@@ -147,10 +148,7 @@ public class themthatbai extends javax.swing.JFrame {
     }//GEN-LAST:event_themActionPerformed
 
     private void khongActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_khongActionPerformed
-        Client1 client = new Client1();
-        client.setVisible(true);
-        client.setLocationRelativeTo(null);
-        client.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
         this.dispose();
         
     }//GEN-LAST:event_khongActionPerformed

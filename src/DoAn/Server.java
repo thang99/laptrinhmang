@@ -17,9 +17,12 @@ import java.net.URL;
 import java.util.List;
 import org.json.JSONObject;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.json.JSONArray;
 
 public class Server {
     private static final int PORT = 12345;
@@ -82,7 +85,7 @@ class ClientHandler implements Runnable {
                 }
                 else if(inputLine.startsWith("dt")){
                     String Path = inputLine.replace("dt", "").trim();
-                    String Object = ObjectDetection(Path);
+                    List<String> Object = ObjectDetection(Path);
                     out.print(Object);
                 }
                 else if(inputLine.startsWith("add")){
@@ -266,7 +269,7 @@ class ClientHandler implements Runnable {
             return -1.0;
         } 
     }
-    private static String ObjectDetection(String imagePath){
+    private static List<String> ObjectDetection(String imagePath){
         try {
             String apiUrl = "https://api.edenai.run/v2/image/object_detection";
             String apiKey = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiODgyM2Y4MjgtZDVlZi00ODEzLThlYTYtNmZiMDQ3MjdhYzEzIiwidHlwZSI6ImFwaV90b2tlbiJ9.l7z8SZKk69WtsX62WK5MTOxQSm1liS2lzHBkvHilvF0";
@@ -311,14 +314,30 @@ class ClientHandler implements Runnable {
 
                 int responseCode = connection.getResponseCode();
                 if (responseCode == HttpURLConnection.HTTP_OK) {
-                    // Read the response
+                    /// Đọc và xử lý phản hồi JSON
                     try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                         StringBuilder response = new StringBuilder();
                         String line;
                         while ((line = reader.readLine()) != null) {
                             response.append(line);
                         }
-                        System.out.println(response.toString());
+
+                        // Phân tích JSON response
+                        JSONObject jsonResponse = new JSONObject(response.toString());
+                        JSONArray itemsArray = jsonResponse.getJSONArray("items");
+
+                        // Trích xuất thông tin từ mảng items
+                        List<String> itemsList = new ArrayList<>();
+                        for (int i = 0; i < itemsArray.length(); i++) {
+                            JSONObject item = itemsArray.getJSONObject(i);
+                            String itemName = item.getString("name");
+                            itemsList.add(itemName);
+                        }
+
+                        // In danh sách items
+                        System.out.println("Items: " + itemsList);
+
+                        return itemsList;
                     }
                 } else {
                     System.out.println("Error: " + responseCode);
@@ -326,7 +345,7 @@ class ClientHandler implements Runnable {
             }
         } catch (IOException e) {
             e.printStackTrace();
-        }   
-        return null;
+        }
+        return Collections.emptyList();
     }
 }
