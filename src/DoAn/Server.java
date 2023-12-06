@@ -59,6 +59,7 @@ class ClientHandler implements Runnable {
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 if(inputLine.startsWith("km")){
+                    System.out.println("Client yêu cầu chức năng nhận diện khuôn mặt.");
                     String Path1 = inputLine.replace("km", "").trim();
                     // Đọc đường dẫn ảnh từ client
                     String imagePath1 = Path1;
@@ -84,11 +85,13 @@ class ClientHandler implements Runnable {
                     }
                 }
                 else if(inputLine.startsWith("dt")){
+                    System.out.println("Client yêu cầu chức năng nhận diện đối tượng.");
                     String Path = inputLine.replace("dt", "").trim();
                     List<String> Object = ObjectDetection(Path);
                     out.print(Object);
                 }
                 else if(inputLine.startsWith("add")){
+                    System.out.println("Client yêu cầu thêm tên vào database.");
                     String them = inputLine.replace("add", "");
                     String[] parts = them.split(";");
                     String receivedPath = parts[0];
