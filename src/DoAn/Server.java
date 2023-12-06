@@ -15,15 +15,17 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
 import java.util.List;
-import org.json.JSONObject;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
+
 
 public class Server {
     private static final int PORT = 12345;
@@ -88,8 +90,8 @@ class ClientHandler implements Runnable {
                 else if(inputLine.startsWith("dt")){
                     System.out.println("Client yêu cầu chức năng nhận diện đối tượng.");
                     String Path = inputLine.replace("dt", "").trim();
-                    List<String> object = ObjectDetection(Path);
-                    out.print(object);
+                    List<String> Objects = ObjectDetection(Path);
+                    out.print(Objects);
                 }
                 else if(inputLine.startsWith("add")){
                     System.out.println("Client yêu cầu thêm tên vào database.");
@@ -331,6 +333,26 @@ class ClientHandler implements Runnable {
                         
                         System.out.println("JSON trả về sau khi gọi API: ");
                         System.out.println(response.toString());
+                        
+                        String jsonString = response.toString();
+                        try {
+                            //Đổi từ StringBuilder về lại định dạng JSON
+                            JSONObject amazonJSON = new JSONObject(jsonString);
+                            //Lấy ra trường "amazon" trong JSON trả về
+                            JSONObject amazonDataJSON = amazonJSON.getJSONObject("amazon");
+                            //Lấy ra array Items trong amazon
+                            JSONArray itemsArr = amazonDataJSON.getJSONArray("items");
+                            
+                            //Đọc "label" từ mỗi item trong "items" (Đọc các đối tượng mà API trả về được).
+                            System.out.println("Danh sách các đối tượng mà API trả về: ");
+                            for (int i = 0; i< itemsArr.length(); i++){
+                                System.out.println(itemsArr.getJSONObject(i).get("label"));
+                            }
+                            
+                        }catch (JSONException err){
+                             err.printStackTrace();
+                        } 
+                        
                         
                         // Phân tích JSON response
 //                        try{
