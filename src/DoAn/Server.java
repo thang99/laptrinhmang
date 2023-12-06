@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.json.JSONArray;
+import org.json.JSONException;
 
 public class Server {
     private static final int PORT = 12345;
@@ -87,8 +88,8 @@ class ClientHandler implements Runnable {
                 else if(inputLine.startsWith("dt")){
                     System.out.println("Client yêu cầu chức năng nhận diện đối tượng.");
                     String Path = inputLine.replace("dt", "").trim();
-                    List<String> Object = ObjectDetection(Path);
-                    out.print(Object);
+                    List<String> object = ObjectDetection(Path);
+                    out.print(object);
                 }
                 else if(inputLine.startsWith("add")){
                     System.out.println("Client yêu cầu thêm tên vào database.");
@@ -316,7 +317,9 @@ class ClientHandler implements Runnable {
                 dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
 
                 int responseCode = connection.getResponseCode();
+                
                 if (responseCode == HttpURLConnection.HTTP_OK) {
+                    System.out.println("Kết nối đến API thành công");
                     /// Đọc và xử lý phản hồi JSON
                     try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                         StringBuilder response = new StringBuilder();
@@ -324,25 +327,37 @@ class ClientHandler implements Runnable {
                         while ((line = reader.readLine()) != null) {
                             response.append(line);
                         }
-
+                        reader.close();
+                        
+                        System.out.println("JSON trả về sau khi gọi API: ");
+                        System.out.println(response.toString());
+                        
                         // Phân tích JSON response
-                        JSONObject jsonResponse = new JSONObject(response.toString());
-                        JSONArray itemsArray = jsonResponse.getJSONArray("items");
-
-                        // Trích xuất thông tin từ mảng items
-                        List<String> itemsList = new ArrayList<>();
-                        for (int i = 0; i < itemsArray.length(); i++) {
-                            JSONObject item = itemsArray.getJSONObject(i);
-                            String itemName = item.getString("name");
-                            itemsList.add(itemName);
-                        }
-
-                        // In danh sách items
-                        System.out.println("Items: " + itemsList);
-
+//                        try{
+//                            JSONObject jsonResponse = new JSONObject(response.toString());
+//                            JSONArray itemsArray = jsonResponse.getJSONArray("items");
+//                        }
+//                        catch(JSONException e){
+//                            e.printStackTrace();
+//                        }
+//                        // Trích xuất thông tin từ mảng items
+                            List<String> itemsList = new ArrayList<>();
+//                            for (int i = 0; i < itemsArray.length(); i++) {
+//                                JSONObject item = itemsArray.getJSONObject(i);
+//                                String itemName = item.getString("name");
+//                                itemsList.add(itemName);
+//                            }
+//                        // In danh sách items
+//                        System.out.println("Items: " + itemsList);
+//
                         return itemsList;
+
+                    }
+                    finally {
+                        connection.disconnect();
                     }
                 } else {
+                    System.out.println("Kết nối đến API thất bại");
                     System.out.println("Error: " + responseCode);
                 }
             }
