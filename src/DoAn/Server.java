@@ -26,6 +26,11 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+import java.net.URI;
 
 public class Server {
     private static final int PORT = 12345;
@@ -276,7 +281,8 @@ class ClientHandler implements Runnable {
         } 
     }
     private static List<String> ObjectDetection(String imagePath){
-        try {
+        try{
+//-------------------------------------------------------------------
             String apiUrl = "https://api.edenai.run/v2/image/object_detection";
             String apiKey = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiODgyM2Y4MjgtZDVlZi00ODEzLThlYTYtNmZiMDQ3MjdhYzEzIiwidHlwZSI6ImFwaV90b2tlbiJ9.l7z8SZKk69WtsX62WK5MTOxQSm1liS2lzHBkvHilvF0";
             String filePath = imagePath;
@@ -293,7 +299,8 @@ class ClientHandler implements Runnable {
 
             connection.setDoOutput(true);
             connection.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
-
+            connection.setRequestProperty("Accept", "application/json");
+            
             try (DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
                  FileInputStream fileInputStream = new FileInputStream(filePath)) {
 
@@ -354,6 +361,7 @@ class ClientHandler implements Runnable {
                         } 
                         
                         
+//-----------------------------------------------------------------------------
                         // Phân tích JSON response
 //                        try{
 //                            JSONObject jsonResponse = new JSONObject(response.toString());
@@ -383,7 +391,7 @@ class ClientHandler implements Runnable {
                     System.out.println("Error: " + responseCode);
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException e){
             e.printStackTrace();
         }
         return Collections.emptyList();
