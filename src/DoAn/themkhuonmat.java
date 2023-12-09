@@ -129,7 +129,6 @@ public class themkhuonmat extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, "Thêm thành công");
             }
             
-            
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Thêm thất bại");
         }

@@ -91,7 +91,10 @@ class ClientHandler implements Runnable {
                     System.out.println("Client yêu cầu chức năng nhận diện đối tượng.");
                     String Path = inputLine.replace("dt", "").trim();
                     List<Item> Objects = ObjectDetection(Path);
-                    out.print(Objects);
+                    try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream())) {
+                        objectOutputStream.writeObject(Objects);
+                        System.out.println("List of persons sent to the client.");
+                    }
                 }
                 else if(inputLine.startsWith("add")){
                     System.out.println("Client yêu cầu thêm tên vào database.");
@@ -149,9 +152,22 @@ class ClientHandler implements Runnable {
             String password = "thang2822001"; 
             Connection connection = DriverManager.getConnection(url, username, password);      
             String query = "INSERT INTO ImagePaths VALUES(?,?)";
-            PreparedStatement pst = connection.prepareStatement(query);
-            pst.setString(1, Path);
-            pst.setString(2, name);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                // Thiết lập các tham số trong truy vấn SQL với giá trị thực tế
+                preparedStatement.setString(1, Path);
+                preparedStatement.setString(2, name);
+                
+
+                // Thực thi truy vấn SQL để thêm dữ liệu
+                int rowsAffected = preparedStatement.executeUpdate();
+
+                // Kiểm tra xem dữ liệu đã được thêm thành công hay không
+                if (rowsAffected > 0) {
+                    System.out.println("Dữ liệu đã được thêm thành công!");
+                } else {
+                    System.out.println("Không thể thêm dữ liệu.");
+                }
+            }
         } catch (Exception e) {
             return "Thêm thất bại";
         }
@@ -368,44 +384,7 @@ class ClientHandler implements Runnable {
                             System.out.println("y_max: " + items.getYMax());
                             System.out.println("-----------");
                         }
-//                        String jsonString = response.toString();
-//                        try {
-//                            //Đổi từ StringBuilder về lại định dạng JSON
-//                            JSONObject amazonJSON = new JSONObject(jsonString);
-//                            //Lấy ra trường "amazon" trong JSON trả về
-//                            JSONObject amazonDataJSON = amazonJSON.getJSONObject("amazon");
-//                            //Lấy ra array Items trong amazon
-//                            JSONArray itemsArr = amazonDataJSON.getJSONArray("items");
-//                            
-//                            //Đọc "label" từ mỗi item trong "items" (Đọc các đối tượng mà API trả về được).
-//                            System.out.println("Danh sách các đối tượng mà API trả về: ");
-//                            for (int i = 0; i< itemsArr.length(); i++){
-//                                System.out.println(itemsArr.getJSONObject(i).get("label"));
-//                            }
-//                            
-//                        }catch (JSONException err){
-//                             err.printStackTrace();
-//                        } 
-                        
-                        
-                        // Phân tích JSON response
-//                        try{
-//                            JSONObject jsonResponse = new JSONObject(response.toString());
-//                            JSONArray itemsArray = jsonResponse.getJSONArray("items");
-//                        }
-//                        catch(JSONException e){
-//                            e.printStackTrace();
-//                        }
-//                        // Trích xuất thông tin từ mảng items
-                            // List<String> itemsList = new ArrayList<>();
-//                            for (int i = 0; i < itemsArray.length(); i++) {
-//                                JSONObject item = itemsArray.getJSONObject(i);
-//                                String itemName = item.getString("name");
-//                                itemsList.add(itemName);
-//                            }
-//                        // In danh sách items
-//                        System.out.println("Items: " + itemsList);
-//
+
                         return itemsList;
 
                     }

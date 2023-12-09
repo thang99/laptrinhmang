@@ -10,8 +10,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -409,21 +413,26 @@ public class Client1 extends javax.swing.JFrame {
 
     private void xacnhan1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_xacnhan1ActionPerformed
         try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream())) {
             // Gửi đường dẫn ảnh đến server
             out.println("dt "+ImagePath);
             // Nhận và in kết quả từ server
-            String line;
-            while ((line = in.readLine()) != null) {
+            List<Item> receivedList = (List<Item>) objectInputStream.readObject();
+            
+            // Process the received list
+            for (Item item : receivedList) {
+                System.out.println(item);
+            }
+            /*while ((line = in.readLine()) != null) {
                 
                 System.out.println(line);
                 JOptionPane.showMessageDialog(this, "Nhận diện thành công");
                 hinh4.setText(line);
-            } 
+            } */
 
-        } catch (IOException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi khi kết nối đến server");
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println(e);
         }
     }//GEN-LAST:event_xacnhan1ActionPerformed
 

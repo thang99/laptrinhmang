@@ -142,7 +142,7 @@ public class themthatbai extends javax.swing.JFrame {
         themkhuonmat tkm = new themkhuonmat();
         tkm.setVisible(true);
         tkm.setLocationRelativeTo(null);
-        tkm.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        //tkm.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.dispose();
         
     }//GEN-LAST:event_themActionPerformed
