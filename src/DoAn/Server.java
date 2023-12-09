@@ -95,7 +95,7 @@ class ClientHandler implements Runnable {
                 }
                 else if(inputLine.startsWith("add")){
                     System.out.println("Client yêu cầu thêm tên vào database.");
-                    String them = inputLine.replace("add", "");
+                    String them = inputLine.replace("add", "").trim();
                     String[] parts = them.split(";");
                     String receivedPath = parts[0];
                     String receivedName = parts[1];                   
@@ -119,7 +119,7 @@ class ClientHandler implements Runnable {
         try {
             String url = "jdbc:sqlserver://localhost:1433;databaseName=laptrinhmang";
             String username = "sa";
-            String password = "123456";
+            String password = "thang2822001";
             Connection connection = DriverManager.getConnection(url, username, password);
 
             // Thực hiện truy vấn để lấy đường dẫn ảnh thứ hai
@@ -143,6 +143,7 @@ class ClientHandler implements Runnable {
     
     private static String insertNameToDatabase(String Path, String name){
         try {
+            System.out.println(Path+";"+name);
             String url = "jdbc:sqlserver://localhost:1433;databaseName=laptrinhmang";
             String username = "sa";
             String password = "thang2822001"; 
@@ -151,7 +152,6 @@ class ClientHandler implements Runnable {
             PreparedStatement pst = connection.prepareStatement(query);
             pst.setString(1, Path);
             pst.setString(2, name);
-
         } catch (Exception e) {
             return "Thêm thất bại";
         }
