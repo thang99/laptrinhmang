@@ -90,7 +90,7 @@ class ClientHandler implements Runnable {
                 else if(inputLine.startsWith("dt")){
                     System.out.println("Client yêu cầu chức năng nhận diện đối tượng.");
                     String Path = inputLine.replace("dt", "").trim();
-                    List<String> Objects = ObjectDetection(Path);
+                    List<Item> Objects = ObjectDetection(Path);
                     out.print(Objects);
                 }
                 else if(inputLine.startsWith("add")){
@@ -275,7 +275,7 @@ class ClientHandler implements Runnable {
             return -1.0;
         } 
     }
-    private static List<String> ObjectDetection(String imagePath){
+    private static List<Item> ObjectDetection(String imagePath){
         try {
             String apiUrl = "https://api.edenai.run/v2/image/object_detection";
             String apiKey = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiODgyM2Y4MjgtZDVlZi00ODEzLThlYTYtNmZiMDQ3MjdhYzEzIiwidHlwZSI6ImFwaV90b2tlbiJ9.l7z8SZKk69WtsX62WK5MTOxQSm1liS2lzHBkvHilvF0";
@@ -334,24 +334,57 @@ class ClientHandler implements Runnable {
                         System.out.println("JSON trả về sau khi gọi API: ");
                         System.out.println(response.toString());
                         
-                        String jsonString = response.toString();
-                        try {
-                            //Đổi từ StringBuilder về lại định dạng JSON
-                            JSONObject amazonJSON = new JSONObject(jsonString);
-                            //Lấy ra trường "amazon" trong JSON trả về
-                            JSONObject amazonDataJSON = amazonJSON.getJSONObject("amazon");
-                            //Lấy ra array Items trong amazon
-                            JSONArray itemsArr = amazonDataJSON.getJSONArray("items");
+                        // Phân tích JSON response
+                        JSONObject jsonResponse = new JSONObject(response.toString());
+                        JSONObject jsonProvider = jsonResponse.getJSONObject("amazon");
+                        JSONArray itemsArray = jsonProvider.getJSONArray("items");
+
+                        // Trích xuất thông tin từ mảng items
+                        List<Item> itemsList = new ArrayList<>();
+                        for (int i = 0; i < itemsArray.length(); i++) {
+                            JSONObject item = itemsArray.getJSONObject(i);
+                            String label = item.getString("label");
+                            Double confidence = item.getDouble("confidence");
+                            Double x_min = item.isNull("x_min") ? null : item.getDouble("x_min");
+                            Double x_max = item.isNull("x_max") ? null : item.getDouble("x_max");
+                            Double y_min = item.isNull("y_min") ? null : item.getDouble("y_min");
+                            Double y_max = item.isNull("y_max") ? null : item.getDouble("y_max");
                             
-                            //Đọc "label" từ mỗi item trong "items" (Đọc các đối tượng mà API trả về được).
-                            System.out.println("Danh sách các đối tượng mà API trả về: ");
-                            for (int i = 0; i< itemsArr.length(); i++){
-                                System.out.println(itemsArr.getJSONObject(i).get("label"));
+                            if (x_min == null || x_max == null || y_min == null || y_max == null) {
+                                continue;
                             }
-                            
-                        }catch (JSONException err){
-                             err.printStackTrace();
-                        } 
+                            Item newItem = new Item(label, confidence, x_min, x_max, y_min, y_max);
+                            itemsList.add(newItem);
+                        }
+
+                        // In danh sách items
+                        for (Item items : itemsList) {
+                            System.out.println("Label: "+ items.label);
+                            System.out.println("Confidence: " + items.confidence);
+                            System.out.println("x_min: " + items.x_min);
+                            System.out.println("x_max: " + items.x_max);
+                            System.out.println("y_min: " + items.x_min);
+                            System.out.println("y_max: " + items.y_max);
+                            System.out.println("-----------");
+                        }
+//                        String jsonString = response.toString();
+//                        try {
+//                            //Đổi từ StringBuilder về lại định dạng JSON
+//                            JSONObject amazonJSON = new JSONObject(jsonString);
+//                            //Lấy ra trường "amazon" trong JSON trả về
+//                            JSONObject amazonDataJSON = amazonJSON.getJSONObject("amazon");
+//                            //Lấy ra array Items trong amazon
+//                            JSONArray itemsArr = amazonDataJSON.getJSONArray("items");
+//                            
+//                            //Đọc "label" từ mỗi item trong "items" (Đọc các đối tượng mà API trả về được).
+//                            System.out.println("Danh sách các đối tượng mà API trả về: ");
+//                            for (int i = 0; i< itemsArr.length(); i++){
+//                                System.out.println(itemsArr.getJSONObject(i).get("label"));
+//                            }
+//                            
+//                        }catch (JSONException err){
+//                             err.printStackTrace();
+//                        } 
                         
                         
                         // Phân tích JSON response
@@ -363,7 +396,7 @@ class ClientHandler implements Runnable {
 //                            e.printStackTrace();
 //                        }
 //                        // Trích xuất thông tin từ mảng items
-                            List<String> itemsList = new ArrayList<>();
+                            // List<String> itemsList = new ArrayList<>();
 //                            for (int i = 0; i < itemsArray.length(); i++) {
 //                                JSONObject item = itemsArray.getJSONObject(i);
 //                                String itemName = item.getString("name");
