@@ -11,19 +11,43 @@ package DoAn;
 import java.io.Serializable;
 
 public class Item implements Serializable {
-    String label;
-    Double confidence;
-    Double x_min;
-    Double x_max;
-    Double y_min;
-    Double y_max;
+private String label;
+    private double confidence;
+    private double xMin;
+    private double yMin;
+    private double xMax;
+    private double yMax;
 
-    public Item (String label, Double confidence, Double x_min, Double x_max, Double y_min, Double y_max) {
+    public Item(String label, double confidence, double xMin, double yMin, double xMax, double yMax) {
         this.label = label;
         this.confidence = confidence;
-        this.x_min = x_min;
-        this.x_max = x_max;
-        this.y_min = y_min;
-        this.y_max = y_max;
+        this.xMin = xMin;
+        this.yMin = yMin;
+        this.xMax = xMax;
+        this.yMax = yMax;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public double getConfidence() {
+        return confidence;
+    }
+
+    public double getXMin() {
+        return xMin;
+    }
+
+    public double getYMin() {
+        return yMin;
+    }
+
+    public double getXMax() {
+        return xMax;
+    }
+
+    public double getYMax() {
+        return yMax;
     }
 }

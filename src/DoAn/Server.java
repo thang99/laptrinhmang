@@ -119,7 +119,7 @@ class ClientHandler implements Runnable {
         try {
             String url = "jdbc:sqlserver://localhost:1433;databaseName=laptrinhmang";
             String username = "sa";
-            String password = "thang2822001";
+            String password = "123456";
             Connection connection = DriverManager.getConnection(url, username, password);
 
             // Thực hiện truy vấn để lấy đường dẫn ảnh thứ hai
@@ -286,7 +286,8 @@ class ClientHandler implements Runnable {
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Authorization", apiKey);
-
+            connection.setRequestProperty("Accept", "application/json");
+                
             String boundary = "*****";
             String lineEnd = "\r\n";
             String twoHyphens = "--";
@@ -359,12 +360,12 @@ class ClientHandler implements Runnable {
 
                         // In danh sách items
                         for (Item items : itemsList) {
-                            System.out.println("Label: "+ items.label);
-                            System.out.println("Confidence: " + items.confidence);
-                            System.out.println("x_min: " + items.x_min);
-                            System.out.println("x_max: " + items.x_max);
-                            System.out.println("y_min: " + items.x_min);
-                            System.out.println("y_max: " + items.y_max);
+                            System.out.println("Label: "+ items.getLabel());
+                            System.out.println("Confidence: " + items.getConfidence());
+                            System.out.println("x_min: " + items.getXMin());
+                            System.out.println("x_max: " + items.getXMax());
+                            System.out.println("y_min: " + items.getYMin());
+                            System.out.println("y_max: " + items.getYMax());
                             System.out.println("-----------");
                         }
 //                        String jsonString = response.toString();
