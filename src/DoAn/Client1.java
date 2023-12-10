@@ -15,6 +15,7 @@ import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.util.Base64;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -415,44 +416,39 @@ public class Client1 extends javax.swing.JFrame {
 
     private void xacnhan1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_xacnhan1ActionPerformed
         try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-        ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream())){
-            // Gửi đường dẫn ảnh đến server
-            out.println("dt ");
-            System.out.println(ImagePath);
+        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))){
             
             // Đọc hình ảnh thành mảng byte
             File imageFile = new File(ImagePath);
             byte[] imageData = Files.readAllBytes(imageFile.toPath());
             
-            // Gửi mảng byte đến server
-            objectOutputStream.writeObject(imageData);
-            objectOutputStream.close();
+            // Gửi hình ảnh sang server dưới dạng base64
+            String base64Image = Base64.getEncoder().encodeToString(imageData);
+            out.println("dt " + base64Image);
 
-            // Nhận và in kết quả từ server
-            List<Item> itemsList = (List<Item>) objectInputStream.readObject();
-
-            if (itemsList != null && !itemsList.isEmpty()) {
-                // Hiển thị thông tin của item đầu tiên
-                Item firstItem = itemsList.get(0);
-                String label = firstItem.getLabel();
-                double confidence = firstItem.getConfidence();
-
-                // In ra console
-                System.out.println(label + ": " + confidence);
-
-                // Hiển thị hình ảnh và label trên giao diện
-                ImageIcon icon = new ImageIcon(ImagePath);
-                Image image = icon.getImage().getScaledInstance(hinh4.getWidth(), hinh4.getHeight(), Image.SCALE_SMOOTH);
-                hinh4.setIcon(new ImageIcon(image));
-                tennhandien1.setText("Đối tượng được nhận diện: " + label + " với độ chính xác là: " + confidence + "%");
-            } else {
-                // Xử lý trường hợp khi không phát hiện được mục nào
-                System.out.println("No items detected.");
-                tennhandien1.setText("Không có đối tượng được nhận diện.");
-            }
-        } catch (IOException | ClassNotFoundException e) {
+//            // Nhận và in kết quả từ server
+//            List<Item> itemsList = (List<Item>) objectInputStream.readObject();
+//
+//            if (itemsList != null && !itemsList.isEmpty()) {
+//                // Hiển thị thông tin của item đầu tiên
+//                Item firstItem = itemsList.get(0);
+//                String label = firstItem.getLabel();
+//                double confidence = firstItem.getConfidence();
+//
+//                // In ra console
+//                System.out.println(label + ": " + confidence);
+//
+//                // Hiển thị hình ảnh và label trên giao diện
+//                ImageIcon icon = new ImageIcon(ImagePath);
+//                Image image = icon.getImage().getScaledInstance(hinh4.getWidth(), hinh4.getHeight(), Image.SCALE_SMOOTH);
+//                hinh4.setIcon(new ImageIcon(image));
+//                tennhandien1.setText("Đối tượng được nhận diện: " + label + " với độ chính xác là: " + confidence + "%");
+//            } else {
+//                // Xử lý trường hợp khi không phát hiện được mục nào
+//                System.out.println("No items detected.");
+//                tennhandien1.setText("Không có đối tượng được nhận diện.");
+//            }
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }//GEN-LAST:event_xacnhan1ActionPerformed
