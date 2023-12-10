@@ -11,7 +11,7 @@ package DoAn;
 import java.io.Serializable;
 
 public class Item implements Serializable {
-private String label;
+    private String label;
     private double confidence;
     private double xMin;
     private double yMin;

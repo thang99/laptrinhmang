@@ -31,7 +31,7 @@ public class Server {
     private static final int PORT = 12345;
     private static final int MAX_CLIENTS = 10;
     private static ExecutorService executorService = Executors.newFixedThreadPool(MAX_CLIENTS);
-    
+
     public static void main(String[] args) {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             System.out.println("Server is running on port " + PORT);
@@ -54,14 +54,14 @@ class ClientHandler implements Runnable {
     public ClientHandler(Socket socket) {
         this.clientSocket = socket;
     }
+
     @Override
-    
     public void run() {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {           
+             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
-                if(inputLine.startsWith("km")){
+                if (inputLine.startsWith("km")) {
                     System.out.println("Client yêu cầu chức năng nhận diện khuôn mặt.");
                     String Path1 = inputLine.replace("km", "").trim();
                     // Đọc đường dẫn ảnh từ client
@@ -75,9 +75,9 @@ class ClientHandler implements Runnable {
                     // Thực hiện so sánh khuôn mặt cho từng đường dẫn ảnh
                     for (String path : imagePathsList) {
                         double result = performFaceComparison(imagePath1, path);
-                        if ( result >=70.0) {
+                        if (result >= 70.0) {
                             String name = getNameFromDatabase(path);
-                            System.out.println(path+","+name+","+result);
+                            System.out.println(path + "," + name + "," + result);
                             out.println(path + ";" + name + ";" + result);
                             foundResult = true;
                         }
@@ -86,22 +86,38 @@ class ClientHandler implements Runnable {
                     if (!foundResult) {
                         out.println("null");
                     }
-                }
-                else if(inputLine.startsWith("dt")){
+                } else if (inputLine.startsWith("dt")) {
                     System.out.println("Client yêu cầu chức năng nhận diện đối tượng.");
-                    String Path = inputLine.replace("dt", "").trim();
-                    List<Item> Objects = ObjectDetection(Path);
-                    try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream())) {
-                        objectOutputStream.writeObject(Objects);
-                        System.out.println("List of persons sent to the client.");
+                    try {
+                        ObjectInputStream objectInputStream = new ObjectInputStream(clientSocket.getInputStream());
+                        ObjectOutputStream objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+                        // Nhận mảng byte từ client
+                        byte[] imageData = (byte[]) objectInputStream.readObject();
+                        String providers = "amazon";
+                        List<Item> itemsList = callObjectDetectionAPI(imageData, providers);
+                        // In danh sách items
+                        for (Item items : itemsList) {
+                            System.out.println("Label: " + items.getLabel());
+                            System.out.println("Confidence: " + items.getConfidence());
+                            System.out.println("x_min: " + items.getXMin());
+                            System.out.println("x_max: " + items.getXMax());
+                            System.out.println("y_min: " + items.getYMin());
+                            System.out.println("y_max: " + items.getYMax());
+                            System.out.println("-----------");
+                        }
+
+                        objectOutputStream.writeObject(itemsList);
+                        objectOutputStream.close();
+                    } catch (IOException | ClassNotFoundException e) {
+                        e.printStackTrace();
                     }
-                }
-                else if(inputLine.startsWith("add")){
+
+                } else if (inputLine.startsWith("add")) {
                     System.out.println("Client yêu cầu thêm tên vào database.");
                     String them = inputLine.replace("add", "").trim();
                     String[] parts = them.split(";");
                     String receivedPath = parts[0];
-                    String receivedName = parts[1];                   
+                    String receivedName = parts[1];
                     String themdtb = insertNameToDatabase(receivedPath, receivedName);
                     out.println(themdtb);
                 }
@@ -291,114 +307,89 @@ class ClientHandler implements Runnable {
             return -1.0;
         } 
     }
-    private static List<Item> ObjectDetection(String imagePath){
-        try {
-            String apiUrl = "https://api.edenai.run/v2/image/object_detection";
-            String apiKey = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiODgyM2Y4MjgtZDVlZi00ODEzLThlYTYtNmZiMDQ3MjdhYzEzIiwidHlwZSI6ImFwaV90b2tlbiJ9.l7z8SZKk69WtsX62WK5MTOxQSm1liS2lzHBkvHilvF0";
-            String filePath = imagePath;
-            String providers = "amazon";
+    private static List<Item> callObjectDetectionAPI(byte[] imageData, String providers) throws IOException {
+        String API_URL = "https://api.edenai.run/v2/image/object_detection";
+        String API_KEY = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiODgyM2Y4MjgtZDVlZi00ODEzLThlYTYtNmZiMDQ3MjdhYzEzIiwidHlwZSI6ImFwaV90b2tlbiJ9.l7z8SZKk69WtsX62WK5MTOxQSm1liS2lzHBkvHilvF0";
+        
+        URL url = new URL(API_URL);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Authorization", API_KEY);
+        connection.setRequestProperty("Accept", "application/json");
 
-            URL url = new URL(apiUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Authorization", apiKey);
-            connection.setRequestProperty("Accept", "application/json");
-                
-            String boundary = "*****";
-            String lineEnd = "\r\n";
-            String twoHyphens = "--";
+        String boundary = "*****";
+        String lineEnd = "\r\n";
+        String twoHyphens = "--";
 
-            connection.setDoOutput(true);
-            connection.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+        connection.setDoOutput(true);
+        connection.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
 
-            try (DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
-                 FileInputStream fileInputStream = new FileInputStream(filePath)) {
+        try (DataOutputStream dos = new DataOutputStream(connection.getOutputStream())) {
 
-                dos.writeBytes(twoHyphens + boundary + lineEnd);
-                dos.writeBytes("Content-Disposition: form-data; name=\"providers\"" + lineEnd);
-                dos.writeBytes(lineEnd);
-                dos.writeBytes(providers + lineEnd);
+            dos.writeBytes(twoHyphens + boundary + lineEnd);
+            dos.writeBytes("Content-Disposition: form-data; name=\"providers\"" + lineEnd);
+            dos.writeBytes(lineEnd);
+            dos.writeBytes(providers + lineEnd);
 
-                dos.writeBytes(twoHyphens + boundary + lineEnd);
-                dos.writeBytes("Content-Disposition: form-data; name=\"file\";filename=\"" + filePath + "\"" + lineEnd);
-                dos.writeBytes(lineEnd);
+            dos.writeBytes(twoHyphens + boundary + lineEnd);
+            dos.writeBytes("Content-Disposition: form-data; name=\"file\";filename=\"image.jpg\"" + lineEnd);
+            dos.writeBytes(lineEnd);
 
-                int bytesAvailable = fileInputStream.available();
-                int bufferSize = Math.min(bytesAvailable, 1024);
-                byte[] buffer = new byte[bufferSize];
+            dos.write(imageData);
 
-                int bytesRead;
-                while ((bytesRead = fileInputStream.read(buffer)) != -1) {
-                    dos.write(buffer, 0, bytesRead);
-                }
+            dos.writeBytes(lineEnd);
+            dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
 
-                dos.writeBytes(lineEnd);
-                dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+            int responseCode = connection.getResponseCode();
 
-                int responseCode = connection.getResponseCode();
-                
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    System.out.println("Kết nối đến API thành công");
-                    /// Đọc và xử lý phản hồi JSON
-                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                        StringBuilder response = new StringBuilder();
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            response.append(line);
-                        }
-                        reader.close();
-                        
-                        System.out.println("JSON trả về sau khi gọi API: ");
-                        System.out.println(response.toString());
-                        
-                        // Phân tích JSON response
-                        JSONObject jsonResponse = new JSONObject(response.toString());
-                        JSONObject jsonProvider = jsonResponse.getJSONObject("amazon");
-                        JSONArray itemsArray = jsonProvider.getJSONArray("items");
-
-                        // Trích xuất thông tin từ mảng items
-                        List<Item> itemsList = new ArrayList<>();
-                        for (int i = 0; i < itemsArray.length(); i++) {
-                            JSONObject item = itemsArray.getJSONObject(i);
-                            String label = item.getString("label");
-                            Double confidence = item.getDouble("confidence");
-                            Double x_min = item.isNull("x_min") ? null : item.getDouble("x_min");
-                            Double x_max = item.isNull("x_max") ? null : item.getDouble("x_max");
-                            Double y_min = item.isNull("y_min") ? null : item.getDouble("y_min");
-                            Double y_max = item.isNull("y_max") ? null : item.getDouble("y_max");
-                            
-                            if (x_min == null || x_max == null || y_min == null || y_max == null) {
-                                continue;
-                            }
-                            Item newItem = new Item(label, confidence, x_min, x_max, y_min, y_max);
-                            itemsList.add(newItem);
-                        }
-
-                        // In danh sách items
-                        for (Item items : itemsList) {
-                            System.out.println("Label: "+ items.getLabel());
-                            System.out.println("Confidence: " + items.getConfidence());
-                            System.out.println("x_min: " + items.getXMin());
-                            System.out.println("x_max: " + items.getXMax());
-                            System.out.println("y_min: " + items.getYMin());
-                            System.out.println("y_max: " + items.getYMax());
-                            System.out.println("-----------");
-                        }
-
-                        return itemsList;
-
-                    }
-                    finally {
-                        connection.disconnect();
-                    }
-                } else {
-                    System.out.println("Kết nối đến API thất bại");
-                    System.out.println("Error: " + responseCode);
-                }
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                System.out.println("Kết nối đến API thành công");
+                return parseJsonResponse(connection.getInputStream());
+            } else {
+                System.out.println("Kết nối đến API thất bại");
+                System.out.println("Error: " + responseCode);
+                return new ArrayList<>();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } finally {
+            connection.disconnect();
         }
-        return Collections.emptyList();
+    }
+
+    private static List<Item> parseJsonResponse(InputStream inputStream) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+
+            System.out.println("JSON trả về sau khi gọi API: ");
+            System.out.println(response.toString());
+
+            // Phân tích JSON response
+            JSONObject jsonResponse = new JSONObject(response.toString());
+            JSONObject jsonProvider = jsonResponse.getJSONObject("amazon");
+            JSONArray itemsArray = jsonProvider.getJSONArray("items");
+
+            // Trích xuất thông tin từ mảng items
+            List<Item> itemsList = new ArrayList<>();
+            for (int i = 0; i < itemsArray.length(); i++) {
+                JSONObject item = itemsArray.getJSONObject(i);
+                String label = item.getString("label");
+                Double confidence = item.getDouble("confidence");
+                Double x_min = item.isNull("x_min") ? null : item.getDouble("x_min");
+                Double x_max = item.isNull("x_max") ? null : item.getDouble("x_max");
+                Double y_min = item.isNull("y_min") ? null : item.getDouble("y_min");
+                Double y_max = item.isNull("y_max") ? null : item.getDouble("y_max");
+
+                if (x_min == null || x_max == null || y_min == null || y_max == null) {
+                    continue;
+                }
+                Item newItem = new Item(label, confidence, x_min, x_max, y_min, y_max);
+                itemsList.add(newItem);
+            }
+
+            return itemsList;
+        }
     }
 }
