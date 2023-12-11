@@ -8,9 +8,13 @@ package DoAn;
 import java.awt.Image;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.List;
@@ -324,33 +328,22 @@ public class Client1 extends javax.swing.JFrame {
 
     private void xacnhanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_xacnhanActionPerformed
         connectToServer();
-        //sendImagePathToServer(ImagePath);
-        try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-            // Gửi đường dẫn ảnh đến server
-            out.println("km "+ImagePath);
-            // Nhận và in kết quả từ server
-            String line = in.readLine();
-            if(line  != null && !line.equals("null")) {
-                System.out.println(line);
-                String[] parts = line.split(";");
-                String receivedPath = parts[0];
-                String receivedName = parts[1];
-                String result = parts[2];
-                System.out.println("Received Name: " + receivedName);
-                System.out.println("Received Image Path: " + receivedPath);
-                JOptionPane.showMessageDialog(this, "Nhận diện thành công");
-                ImageIcon icon = new ImageIcon(receivedPath);
-                Image image = icon.getImage().getScaledInstance(hinh2.getWidth(), hinh2.getHeight(), Image.SCALE_SMOOTH);
-                hinh2.setIcon(new ImageIcon(image));
-                tennhandien.setText("Giống với "+receivedName+" với độ chính xác là: "+result+"%" );
-                } else {
-                ImageIcon imageIcon = new ImageIcon(ImagePath);
-                themthatbai.transferImage(imageIcon);
-            } 
+        try {
+            
+            // Gửi dữ liệu tới server
+            OutputStream outputStream = socket.getOutputStream();
+            outputStream.write("km".getBytes());
+            
+            sendImage(ImagePath);
+
         } catch (IOException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi khi kết nối đến server");
+            System.err.println(e);
+        } finally {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
     }//GEN-LAST:event_xacnhanActionPerformed
@@ -412,30 +405,79 @@ public class Client1 extends javax.swing.JFrame {
     }//GEN-LAST:event_chonanh1ActionPerformed
 
     private void xacnhan1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_xacnhan1ActionPerformed
-        try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream())) {
-            // Gửi đường dẫn ảnh đến server
-            out.println("dt "+ImagePath);
-            // Nhận và in kết quả từ server
-            List<Item> receivedList = (List<Item>) objectInputStream.readObject();
+        connectToServer();
+        try {
             
-            // Process the received list
-            for (Item item : receivedList) {
-                System.out.println(item);
-            }
-            /*while ((line = in.readLine()) != null) {
-                
-                System.out.println(line);
-                JOptionPane.showMessageDialog(this, "Nhận diện thành công");
-                hinh4.setText(line);
-            } */
+            // Gửi dữ liệu tới server
+            InputStream inputStream = socket.getInputStream();
+            OutputStream outputStream = socket.getOutputStream();
+            outputStream.write("dt".getBytes());
+            
+            sendImage(ImagePath);
+            
+            int lastIndex = ImagePath.lastIndexOf("\\");
+            
+            String imagePathTemp = ImagePath.substring(0, lastIndex) + "\\object_temp.jpg";
+            System.out.println(imagePathTemp);
+            
+            receiveImage (inputStream, imagePathTemp);
+            
+            ImageIcon icon = new ImageIcon(imagePathTemp);
+            Image image = icon.getImage().getScaledInstance(hinh2.getWidth(), hinh2.getHeight(), Image.SCALE_SMOOTH);
+            hinh4.setIcon(new ImageIcon(image));
 
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             System.err.println(e);
+        } finally {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }//GEN-LAST:event_xacnhan1ActionPerformed
 
+    private void receiveImage(InputStream inputStream, String imagePath) {
+        try {
+            File receivedImageFile = new File(imagePath);
+            FileOutputStream fileOutputStream = new FileOutputStream(receivedImageFile);
+
+            // Ghi dữ liệu hình ảnh vào file received_image
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                fileOutputStream.write(buffer, 0, bytesRead);
+            }
+
+            System.out.println("Image received and saved successfully.");
+        } catch (IOException e) {
+            System.err.println(e);
+        } 
+    }
+    
+    private void sendImage(String imagePath) {
+        try {
+            // Mở một luồng riêng để gửi dữ liệu hình ảnh
+            try (OutputStream outputStream = socket.getOutputStream();
+                 FileInputStream fileInputStream = new FileInputStream(new File(imagePath))) {
+
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+
+                System.out.println("Image sent successfully.");
+
+            } catch (IOException e) {
+                System.err.println("Error sending image: " + e);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    
     private void resetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetActionPerformed
 
 
