@@ -13,6 +13,10 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,7 +60,27 @@ public class Client1 extends javax.swing.JFrame {
     public String getImagePath() {
     return ImagePath;
     }
-   
+    private void decodeBase64AndWriteImage(String base64String, String imagePath) {
+        try {
+            byte[] imageBytes = Base64.getDecoder().decode(base64String);
+            Path path = Paths.get(imagePath);
+            Files.write(path, imageBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String convertImageToBase64(String imagePath) {
+        String base64String = "";
+        try {
+            Path path = Paths.get(imagePath);
+            byte[] imageBytes = Files.readAllBytes(path);
+            base64String = Base64.getEncoder().encodeToString(imageBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return base64String;
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -328,7 +352,8 @@ public class Client1 extends javax.swing.JFrame {
         try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
             // Gửi đường dẫn ảnh đến server
-            out.println("km "+ImagePath);
+            String base64Image = convertImageToBase64(ImagePath);
+            out.println("km "+base64Image);
             // Nhận và in kết quả từ server
             String line = in.readLine();
             if(line  != null && !line.equals("null")) {

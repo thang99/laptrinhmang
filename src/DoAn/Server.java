@@ -14,10 +14,14 @@ import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -63,9 +67,10 @@ class ClientHandler implements Runnable {
             while ((inputLine = in.readLine()) != null) {
                 if(inputLine.startsWith("km")){
                     System.out.println("Client yêu cầu chức năng nhận diện khuôn mặt.");
-                    String Path1 = inputLine.replace("km", "").trim();
+                    String base64String = inputLine.replace("km", "").trim();
                     // Đọc đường dẫn ảnh từ client
-                    String imagePath1 = Path1;
+                    String imagePath1 = "C:\\Users\\ACER\\Pictures\\a.png";
+                    decodeBase64AndWriteImage(base64String,imagePath1);
                     String imagePath2 = getImagePathFromDatabase();
 
                     // Thực hiện so sánh khuôn mặt
@@ -116,7 +121,27 @@ class ClientHandler implements Runnable {
             }
         }
     }
-    
+    private void decodeBase64AndWriteImage(String base64String, String imagePath) {
+        try {
+            byte[] imageBytes = Base64.getDecoder().decode(base64String);
+            Path path = Paths.get(imagePath);
+            Files.write(path, imageBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String convertImageToBase64(String imagePath) {
+        String base64String = "";
+        try {
+            Path path = Paths.get(imagePath);
+            byte[] imageBytes = Files.readAllBytes(path);
+            base64String = Base64.getEncoder().encodeToString(imageBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return base64String;
+    }
     private static String getNameFromDatabase(String path){    
         String name = null;
         try {

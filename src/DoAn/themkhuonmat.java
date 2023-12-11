@@ -32,7 +32,7 @@ public class themkhuonmat extends javax.swing.JFrame {
     
     public themkhuonmat() {
         initComponents();
-        connectToServer();
+        
     }
     
     private void connectToServer() {
@@ -116,7 +116,7 @@ public class themkhuonmat extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void okActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okActionPerformed
-        
+        connectToServer();
         try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
             Client1 client1 = Client1 .getCurrentInstance();
@@ -132,7 +132,7 @@ public class themkhuonmat extends javax.swing.JFrame {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Thêm thất bại");
         }
-        this.dispose();
+        System.exit(0);
     }//GEN-LAST:event_okActionPerformed
 
     /**
