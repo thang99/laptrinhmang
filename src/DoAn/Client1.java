@@ -33,7 +33,7 @@ public class Client1 extends javax.swing.JFrame {
         currentInstance = this;
     }
     private void connectToServer() {
-        String serverAddress = "localhost";
+        String serverAddress = "172.20.10.3";
         int serverPort = 12345;
 
         try {

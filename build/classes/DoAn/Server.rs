@@ -1,0 +1,4 @@
+DoAn.ClientHandler
+DoAn.ClientHandler$SendImageTask
+DoAn.Server
+DoAn.ClientHandler$ReceiveImageTask
