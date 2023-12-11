@@ -67,10 +67,10 @@ class ClientHandler implements Runnable {
             while ((inputLine = in.readLine()) != null) {
                 if(inputLine.startsWith("km")){
                     System.out.println("Client yêu cầu chức năng nhận diện khuôn mặt.");
-                    String base64String = inputLine.replace("km", "").trim();
+                    String Path1 = inputLine.replace("km", "").trim();
                     // Đọc đường dẫn ảnh từ client
-                    String imagePath1 = "C:\\Users\\ACER\\Pictures\\a.png";
-                    decodeBase64AndWriteImage(base64String,imagePath1);
+                    String imagePath1 = Path1;
+                    
                     String imagePath2 = getImagePathFromDatabase();
 
                     // Thực hiện so sánh khuôn mặt
@@ -95,11 +95,8 @@ class ClientHandler implements Runnable {
                 else if(inputLine.startsWith("dt")){
                     System.out.println("Client yêu cầu chức năng nhận diện đối tượng.");
                     String Path = inputLine.replace("dt", "").trim();
-                    List<Item> Objects = ObjectDetection(Path);
-                    try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream())) {
-                        objectOutputStream.writeObject(Objects);
-                        System.out.println("List of persons sent to the client.");
-                    }
+                    List<String> Objects = ObjectDetection(Path);
+                    sendObjectListToClient(Objects);
                 }
                 else if(inputLine.startsWith("add")){
                     System.out.println("Client yêu cầu thêm tên vào database.");
@@ -121,27 +118,7 @@ class ClientHandler implements Runnable {
             }
         }
     }
-    private void decodeBase64AndWriteImage(String base64String, String imagePath) {
-        try {
-            byte[] imageBytes = Base64.getDecoder().decode(base64String);
-            Path path = Paths.get(imagePath);
-            Files.write(path, imageBytes);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private String convertImageToBase64(String imagePath) {
-        String base64String = "";
-        try {
-            Path path = Paths.get(imagePath);
-            byte[] imageBytes = Files.readAllBytes(path);
-            base64String = Base64.getEncoder().encodeToString(imageBytes);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return base64String;
-    }
+    
     private static String getNameFromDatabase(String path){    
         String name = null;
         try {
@@ -316,7 +293,7 @@ class ClientHandler implements Runnable {
             return -1.0;
         } 
     }
-    private static List<Item> ObjectDetection(String imagePath){
+    private static List<String> ObjectDetection(String imagePath){
         try {
             String apiUrl = "https://api.edenai.run/v2/image/object_detection";
             String apiKey = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiODgyM2Y4MjgtZDVlZi00ODEzLThlYTYtNmZiMDQ3MjdhYzEzIiwidHlwZSI6ImFwaV90b2tlbiJ9.l7z8SZKk69WtsX62WK5MTOxQSm1liS2lzHBkvHilvF0";
@@ -375,43 +352,29 @@ class ClientHandler implements Runnable {
                         
                         System.out.println("JSON trả về sau khi gọi API: ");
                         System.out.println(response.toString());
-                        
+                        List<String> itemsList = new ArrayList<>();                       
                         // Phân tích JSON response
-                        JSONObject jsonResponse = new JSONObject(response.toString());
-                        JSONObject jsonProvider = jsonResponse.getJSONObject("amazon");
-                        JSONArray itemsArray = jsonProvider.getJSONArray("items");
+                        String jsonString = response.toString();
+                        try {
+                            //Đổi từ StringBuilder về lại định dạng JSON
+                            JSONObject amazonJSON = new JSONObject(jsonString);
+                            //Lấy ra trường "amazon" trong JSON trả về
+                            JSONObject amazonDataJSON = amazonJSON.getJSONObject("amazon");
+                            //Lấy ra array Items trong amazon
+                            JSONArray itemsArr = amazonDataJSON.getJSONArray("items");
 
-                        // Trích xuất thông tin từ mảng items
-                        List<Item> itemsList = new ArrayList<>();
-                        for (int i = 0; i < itemsArray.length(); i++) {
-                            JSONObject item = itemsArray.getJSONObject(i);
-                            String label = item.getString("label");
-                            Double confidence = item.getDouble("confidence");
-                            Double x_min = item.isNull("x_min") ? null : item.getDouble("x_min");
-                            Double x_max = item.isNull("x_max") ? null : item.getDouble("x_max");
-                            Double y_min = item.isNull("y_min") ? null : item.getDouble("y_min");
-                            Double y_max = item.isNull("y_max") ? null : item.getDouble("y_max");
-                            
-                            if (x_min == null || x_max == null || y_min == null || y_max == null) {
-                                continue;
+                            //Đọc "label" từ mỗi item trong "items" (Đọc các đối tượng mà API trả về được).
+                            System.out.println("Danh sách các đối tượng mà API trả về: ");
+                            for (int i = 0; i< itemsArr.length(); i++){
+                                String label = itemsArr.getJSONObject(i).getString("label");
+                                System.out.println(label);
+                                itemsList.add(label);
                             }
-                            Item newItem = new Item(label, confidence, x_min, x_max, y_min, y_max);
-                            itemsList.add(newItem);
-                        }
 
-                        // In danh sách items
-                        for (Item items : itemsList) {
-                            System.out.println("Label: "+ items.getLabel());
-                            System.out.println("Confidence: " + items.getConfidence());
-                            System.out.println("x_min: " + items.getXMin());
-                            System.out.println("x_max: " + items.getXMax());
-                            System.out.println("y_min: " + items.getYMin());
-                            System.out.println("y_max: " + items.getYMax());
-                            System.out.println("-----------");
-                        }
-
+                        }catch (JSONException err){
+                             err.printStackTrace();
+                        }           
                         return itemsList;
-
                     }
                     finally {
                         connection.disconnect();
@@ -425,5 +388,14 @@ class ClientHandler implements Runnable {
             e.printStackTrace();
         }
         return Collections.emptyList();
+    }
+    
+    private void sendObjectListToClient(List<String> objectList) {
+        try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(clientSocket.getOutputStream())) {
+            objectOutputStream.writeObject(objectList);
+            System.out.println("List of objects sent to the client.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

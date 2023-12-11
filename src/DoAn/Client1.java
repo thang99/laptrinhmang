@@ -33,6 +33,7 @@ public class Client1 extends javax.swing.JFrame {
      * Creates new form Client1
      */
     private String ImagePath;
+    private String ImagePath1;
     private Socket socket;
     
     public Client1() {
@@ -60,27 +61,7 @@ public class Client1 extends javax.swing.JFrame {
     public String getImagePath() {
     return ImagePath;
     }
-    private void decodeBase64AndWriteImage(String base64String, String imagePath) {
-        try {
-            byte[] imageBytes = Base64.getDecoder().decode(base64String);
-            Path path = Paths.get(imagePath);
-            Files.write(path, imageBytes);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private String convertImageToBase64(String imagePath) {
-        String base64String = "";
-        try {
-            Path path = Paths.get(imagePath);
-            byte[] imageBytes = Files.readAllBytes(path);
-            base64String = Base64.getEncoder().encodeToString(imageBytes);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return base64String;
-    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -351,9 +332,8 @@ public class Client1 extends javax.swing.JFrame {
         //sendImagePathToServer(ImagePath);
         try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-            // Gửi đường dẫn ảnh đến server
-            String base64Image = convertImageToBase64(ImagePath);
-            out.println("km "+base64Image);
+            // Gửi đường dẫn ảnh đến server         
+            out.println("km "+ImagePath);
             // Nhận và in kết quả từ server
             String line = in.readLine();
             if(line  != null && !line.equals("null")) {
@@ -409,6 +389,7 @@ public class Client1 extends javax.swing.JFrame {
     }//GEN-LAST:event_chonanhActionPerformed
 
     private void chonanh1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chonanh1ActionPerformed
+        
         try {
             JFileChooser fileChooser = new JFileChooser();
             FileNameExtensionFilter filter = new FileNameExtensionFilter("Hình ảnh", "jpg", "jpeg", "png", "gif");
@@ -429,7 +410,7 @@ public class Client1 extends javax.swing.JFrame {
                 // Cập nhật lại giao diện
                 jPanel11.validate();
                 jPanel11.repaint();
-                ImagePath = selectedImagePath;
+                ImagePath1 = selectedImagePath;
 
             }
         } catch (Exception e) {
@@ -437,25 +418,32 @@ public class Client1 extends javax.swing.JFrame {
     }//GEN-LAST:event_chonanh1ActionPerformed
 
     private void xacnhan1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_xacnhan1ActionPerformed
+        connectToServer();
         try (PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream())) {
+            ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream())){
             // Gửi đường dẫn ảnh đến server
-            out.println("dt "+ImagePath);
+            System.out.println(ImagePath1);
+            out.println("dt "+ImagePath1);
             // Nhận và in kết quả từ server
-            List<Item> receivedList = (List<Item>) objectInputStream.readObject();
             
-            // Process the received list
-            for (Item item : receivedList) {
-                System.out.println(item);
-            }
-            /*while ((line = in.readLine()) != null) {
-                
-                System.out.println(line);
-                JOptionPane.showMessageDialog(this, "Nhận diện thành công");
-                hinh4.setText(line);
-            } */
+            Object receivedObject = objectInputStream.readObject();
 
+            if (receivedObject instanceof List) {
+                // Kiểm tra xem đối tượng nhận được có phải là một danh sách hay không
+                List<String> objectList = (List<String>) receivedObject;
+
+                // In kết quả từ danh sách
+                for (String line : objectList) {
+                    System.out.println(line);
+                }
+
+                // Hiển thị thông báo và cập nhật giao diện của bạn
+                JOptionPane.showMessageDialog(this, "Nhận diện thành công");
+                hinh4.setText(objectList.toString());
+            } else {
+                System.out.println("Không nhận được danh sách đối tượng từ máy chủ.");
+            }
         } catch (IOException | ClassNotFoundException e) {
             System.err.println(e);
         }
