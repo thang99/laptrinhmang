@@ -89,7 +89,7 @@ class ClientHandler implements Runnable {
                 // Generate a random integer
                 int randomNumber = random.nextInt();
                 
-                String imagePath1 = "C:\\Users\\HoangPhi\\Desktop\\temp" + String.valueOf(randomNumber) + ".jpg";
+                String imagePath1 = "C:\\Users\\ACER\\Pictures\\temp" + String.valueOf(randomNumber) + ".jpg";
                 System.out.println(imagePath1);
                 
                 receiveImage(inputStream, imagePath1);
@@ -118,7 +118,7 @@ class ClientHandler implements Runnable {
                 
             } else if ("dt".equals(keyword)) {
                 System.out.println("Client yêu cầu chức năng nhận diện đối tượng.");
-                String imagePath = "C:\\Users\\HoangPhi\\Desktop\\received_image.jpg";
+                String imagePath = "C:\\Users\\ACER\\Pictures\\received_image.jpg";
                 System.out.println(imagePath);
                 
                 // Ghi dữ liệu hình ảnh vào file received_image
@@ -134,11 +134,11 @@ class ClientHandler implements Runnable {
                 drawRectanglesWithInfo(originalImage, detectedObjects);
 
                 // Save the modified image
-                String imagePathTemp = "C:\\Users\\HoangPhi\\Desktop\\image_with_objects.jpg";
+                String imagePathTemp = "C:\\Users\\ACER\\Pictures\\image_with_objects.jpg";
                 saveImage(originalImage, imagePathTemp);
                 
                 //Gửi hình ảnh về Client
-                //sendImage(outputStream, imagePathTemp);
+                sendImage(outputStream, imagePathTemp);
                
             } else {
                 System.out.println("Invalid keyword. Image not received");

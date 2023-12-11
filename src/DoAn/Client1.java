@@ -416,16 +416,16 @@ public class Client1 extends javax.swing.JFrame {
             
             sendImage(outputStream, ImagePath);
             
-//            int lastIndex = ImagePath.lastIndexOf("\\");
-//            
-//            String imagePathTemp = ImagePath.substring(0, lastIndex) + "\\object_temp.jpg";
-//            System.out.println(imagePathTemp);
-//            
-//            receiveImage (inputStream, imagePathTemp);
-//            
-//            ImageIcon icon = new ImageIcon(imagePathTemp);
-//            Image image = icon.getImage().getScaledInstance(hinh2.getWidth(), hinh2.getHeight(), Image.SCALE_SMOOTH);
-//            hinh4.setIcon(new ImageIcon(image));
+            int lastIndex = ImagePath.lastIndexOf("\\");
+            
+           String imagePathTemp = ImagePath.substring(0, lastIndex) + "\\object_temp.jpg";
+            System.out.println(imagePathTemp);
+            
+           receiveImage (inputStream, imagePathTemp);
+           
+           ImageIcon icon = new ImageIcon(imagePathTemp);
+           Image image = icon.getImage().getScaledInstance(hinh2.getWidth(), hinh2.getHeight(), Image.SCALE_SMOOTH);
+           hinh4.setIcon(new ImageIcon(image));
 
         } catch (IOException e) {
             System.err.println(e);
