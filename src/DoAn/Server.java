@@ -119,8 +119,7 @@ class ClientHandler implements Runnable {
             } else if ("dt".equals(keyword)) {
                 System.out.println("Client yêu cầu chức năng nhận diện đối tượng.");
                 String imagePath = "C:\\Users\\HoangPhi\\Desktop\\received_image.jpg";
-                
-                File receivedImageFile = new File(imagePath);
+                System.out.println(imagePath);
                 
                 // Ghi dữ liệu hình ảnh vào file received_image
                 receiveImage(inputStream, imagePath);
@@ -139,7 +138,7 @@ class ClientHandler implements Runnable {
                 saveImage(originalImage, imagePathTemp);
                 
                 //Gửi hình ảnh về Client
-                sendImage(outputStream, imagePathTemp);
+                //sendImage(outputStream, imagePathTemp);
                
             } else {
                 System.out.println("Invalid keyword. Image not received");

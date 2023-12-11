@@ -331,10 +331,11 @@ public class Client1 extends javax.swing.JFrame {
         try {
             
             // Gửi dữ liệu tới server
+            InputStream inputStream = socket.getInputStream();
             OutputStream outputStream = socket.getOutputStream();
             outputStream.write("km".getBytes());
             
-            sendImage(ImagePath);
+            sendImage(outputStream, ImagePath);
 
         } catch (IOException e) {
             System.err.println(e);
@@ -413,18 +414,18 @@ public class Client1 extends javax.swing.JFrame {
             OutputStream outputStream = socket.getOutputStream();
             outputStream.write("dt".getBytes());
             
-            sendImage(ImagePath);
+            sendImage(outputStream, ImagePath);
             
-            int lastIndex = ImagePath.lastIndexOf("\\");
-            
-            String imagePathTemp = ImagePath.substring(0, lastIndex) + "\\object_temp.jpg";
-            System.out.println(imagePathTemp);
-            
-            receiveImage (inputStream, imagePathTemp);
-            
-            ImageIcon icon = new ImageIcon(imagePathTemp);
-            Image image = icon.getImage().getScaledInstance(hinh2.getWidth(), hinh2.getHeight(), Image.SCALE_SMOOTH);
-            hinh4.setIcon(new ImageIcon(image));
+//            int lastIndex = ImagePath.lastIndexOf("\\");
+//            
+//            String imagePathTemp = ImagePath.substring(0, lastIndex) + "\\object_temp.jpg";
+//            System.out.println(imagePathTemp);
+//            
+//            receiveImage (inputStream, imagePathTemp);
+//            
+//            ImageIcon icon = new ImageIcon(imagePathTemp);
+//            Image image = icon.getImage().getScaledInstance(hinh2.getWidth(), hinh2.getHeight(), Image.SCALE_SMOOTH);
+//            hinh4.setIcon(new ImageIcon(image));
 
         } catch (IOException e) {
             System.err.println(e);
@@ -455,11 +456,11 @@ public class Client1 extends javax.swing.JFrame {
         } 
     }
     
-    private void sendImage(String imagePath) {
+    private void sendImage(OutputStream outputStream, String imagePath) {
         try {
             // Mở một luồng riêng để gửi dữ liệu hình ảnh
-            try (OutputStream outputStream = socket.getOutputStream();
-                 FileInputStream fileInputStream = new FileInputStream(new File(imagePath))) {
+            try {
+                FileInputStream fileInputStream = new FileInputStream(new File(imagePath));
 
                 byte[] buffer = new byte[1024];
                 int bytesRead;
